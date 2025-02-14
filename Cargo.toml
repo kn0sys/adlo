@@ -13,7 +13,7 @@ keywords = [
 	"algebra",
 	"math"
 ]
-categories = ["math"]
+categories = ["mathematics"]
 
 [lib]
 name = "adlo"
