@@ -26,7 +26,7 @@ const S_PSI: f64 = 1.0 - PSI;
 /// The Vector struct represents a distinction in n-dimensional space.  
 #[derive(Debug, Clone, Default, PartialEq, PartialOrd)]
 pub struct AdloVector {
-    coords: DVector<i64>,
+    pub coords: DVector<i64>,
     f64_coords: DVector<f64>,
     norm_sq: i128,
 }
@@ -49,7 +49,7 @@ impl AdloVector {
     fn norm_squared(&self) -> i128 {
         self.norm_sq
     }
-    fn norm(&self) -> f64 {
+    pub fn norm(&self) -> f64 {
         (self.norm_squared() as f64).sqrt()
     }
     fn set_f64_coords(&mut self) {
