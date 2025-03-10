@@ -19,7 +19,7 @@
 use nalgebra::{DVector, DMatrix};
 
 // Used for calculating adaptive lovaz factor;
-const PSI: f64 = 0.618;
+pub const PSI: f64 = 0.618;
 const S_PSI: f64 = 1.0 - PSI;
 
 
@@ -27,8 +27,8 @@ const S_PSI: f64 = 1.0 - PSI;
 #[derive(Debug, Clone, Default, PartialEq, PartialOrd)]
 pub struct AdloVector {
     pub coords: DVector<i64>,
-    f64_coords: DVector<f64>,
-    norm_sq: i128,
+    pub f64_coords: DVector<f64>,
+    pub norm_sq: i128,
 }
 
 impl AdloVector {
@@ -52,7 +52,7 @@ impl AdloVector {
     pub fn norm(&self) -> f64 {
         (self.norm_squared() as f64).sqrt()
     }
-    fn set_f64_coords(&mut self) {
+    pub fn set_f64_coords(&mut self) {
         self.f64_coords = self.coords.clone().cast::<f64>();
     }
 }
@@ -163,7 +163,7 @@ pub fn adaptive_lll(basis: &mut [AdloVector]) {
     }
 }
 
-fn create_rotation_matrix(n: usize, i: usize, j: usize, theta: f64) -> DMatrix<f64> {
+pub fn create_rotation_matrix(n: usize, i: usize, j: usize, theta: f64) -> DMatrix<f64> {
     let mut matrix = DMatrix::identity(n, n);
     let cos_theta = theta.cos();
     let sin_theta = theta.sin();
@@ -176,7 +176,7 @@ fn create_rotation_matrix(n: usize, i: usize, j: usize, theta: f64) -> DMatrix<f
     matrix
 }
 
-fn rotate_vector(v: &DVector<f64>, i: usize, j: usize, theta: f64) -> DVector<f64> {
+pub fn rotate_vector(v: &DVector<f64>, i: usize, j: usize, theta: f64) -> DVector<f64> {
     let n = v.len();
     let rotation_matrix = create_rotation_matrix(n, i, j, theta);
     rotation_matrix * v
