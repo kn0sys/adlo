@@ -1,8 +1,7 @@
-
 //! ## Example
 //!
 //! ```rust
-//! use adlo::*; 
+//! use adlo::*;
 //! use nalgebra::{DVector, DMatrix};
 //!
 //! fn basis_2d_test() {
@@ -13,15 +12,14 @@
 //!        adaptive_lll(&mut basis_2d);
 //!        let expected = AdloVector::new(DVector::from_vec(vec![1, -1]));
 //!        assert_eq!(expected, basis_2d[basis_2d.len()-1]);
-//!    } 
+//!    }
 //!```
 
-use nalgebra::{DVector, DMatrix};
+use nalgebra::{DMatrix, DVector};
 
 // Used for calculating adaptive lovaz factor;
 pub const PSI: f64 = 0.618;
 const S_PSI: f64 = 1.0 - PSI;
-
 
 /// The Vector struct represents a distinction in n-dimensional space.  
 #[derive(Debug, Clone, Default, PartialEq, PartialOrd)]
@@ -36,7 +34,11 @@ impl AdloVector {
     pub fn new(coords: DVector<i64>) -> Self {
         let f64_coords = coords.clone().cast::<f64>();
         let norm_sq = Self::calculate_norm_sq(&coords);
-        AdloVector { coords, f64_coords, norm_sq }
+        AdloVector {
+            coords,
+            f64_coords,
+            norm_sq,
+        }
     }
     fn calculate_norm_sq(coords: &DVector<i64>) -> i128 {
         let mut sum: i128 = 0;
@@ -94,7 +96,7 @@ fn calculate_lovasz_factor(density: f64) -> f64 {
 /// of vectors by normalizing each vector in the orthogonal set to have a unit length
 ///
 /// The lovasz_factor is calculated via `PSI + 1 - PSI * density.min(1.0)` where density is the
-/// 
+///
 /// measure of nearby vectors.
 pub fn adaptive_lll(basis: &mut [AdloVector]) {
     let n = basis.len();
@@ -142,7 +144,9 @@ pub fn adaptive_lll(basis: &mut [AdloVector]) {
         let local_density = calculate_local_density(basis, k);
         let lovasz_factor = calculate_lovasz_factor(local_density);
         // Lovász condition
-        if b_star[k].norm().powi(2) + (mu[(k, k - 1)].round() as f64 * b_star[k - 1].norm().powi(2)) < lovasz_factor * b_star[k - 1].norm().powi(2) {
+        if b_star[k].norm().powi(2) + (mu[(k, k - 1)].round() as f64 * b_star[k - 1].norm().powi(2))
+            < lovasz_factor * b_star[k - 1].norm().powi(2)
+        {
             basis.swap(k - 1, k);
             // Recompute mu and b_star after swap
             b_star.clear();
@@ -150,7 +154,8 @@ pub fn adaptive_lll(basis: &mut [AdloVector]) {
             for i in 0..n {
                 b_star.push(basis[i].clone());
                 for j in 0..i {
-                    mu[(i, j)] = b_star[i].f64_coords.dot(&b_star[j].f64_coords) / b_star[j].norm().powi(2);
+                    mu[(i, j)] =
+                        b_star[i].f64_coords.dot(&b_star[j].f64_coords) / b_star[j].norm().powi(2);
                     let new_coords_f64 = mu[(i, j)] * &b_star[j].f64_coords;
                     b_star[i].f64_coords -= new_coords_f64.clone();
                     b_star[i].coords = new_coords_f64.map(|x| x.round() as i64);
@@ -194,7 +199,8 @@ pub fn multi_frame_search(basis: &mut Vec<AdloVector>) {
         let angle_rad = (angle as f64).to_radians();
         // Iterate over all pairs of dimensions
         for i in 0..n {
-            for j in i + 1..n { // Avoid rotating a dimension with itself and avoid duplicates
+            for j in i + 1..n {
+                // Avoid rotating a dimension with itself and avoid duplicates
                 let mut rotated_basis = basis.to_vec();
                 for vec in &mut rotated_basis {
                     // Rotate in the i-j plane
@@ -225,12 +231,12 @@ mod tests {
     fn basis_2d_test() {
         let mut basis_2d = vec![
             AdloVector::new(DVector::from_vec(vec![5, 3])),
-            AdloVector::new(DVector::from_vec(vec![2, 2]))
+            AdloVector::new(DVector::from_vec(vec![2, 2])),
         ];
         multi_frame_search(&mut basis_2d);
         let mut expected = AdloVector::new(DVector::from_vec(vec![1, -1]));
         expected.norm_sq = 34;
-        assert_eq!(expected, basis_2d[basis_2d.len()-1]);
+        assert_eq!(expected, basis_2d[basis_2d.len() - 1]);
     }
 
     #[test]
@@ -242,8 +248,7 @@ mod tests {
         ];
         multi_frame_search(&mut basis_5d);
         let mut expected = AdloVector::new(DVector::from_vec(vec![-1, 0, 2]));
-        expected.norm_sq = 5; 
-        assert_eq!(expected, basis_5d[basis_5d.len()-2]);
+        expected.norm_sq = 5;
+        assert_eq!(expected, basis_5d[basis_5d.len() - 2]);
     }
 }
-
